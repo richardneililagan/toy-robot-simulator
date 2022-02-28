@@ -1,3 +1,7 @@
+// :: Compiler will complain about this function as not being used (which we're not),
+//    but this is worthwhile to keep around for debugging, etc — so we're just
+//    flagging this as a known potential dead code section.
+#[allow(dead_code)]
 pub fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the
     // `set_panic_hook` function at least once during initialization, and then
