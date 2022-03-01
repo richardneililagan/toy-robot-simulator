@@ -4,17 +4,11 @@ import useTabletop from '@/hooks/use-tabletop'
 
 // :: ---
 
-vi.mock('@toy-robot-simulator/rules_engine', () => {
-  return async () => ({
-    Tabletop: () => ({}),
-  })
-})
-
-vi.mock('@toy-robot-simulator/rules_engine/rules_engine_bg.wasm?url', () => ({}))
+vi.mock('@toy-robot-simulator/rules_engine')
 
 describe('useTabletop hook', () => {
   it('creates a Tabletop factory function', () => {
     const { result } = renderHook(() => useTabletop())
-    expect(result).toBeInstanceOf(Function)
+    expect(result.current).toBeInstanceOf(Function)
   })
 })
