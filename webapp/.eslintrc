@@ -1,0 +1,32 @@
+---
+parser: '@typescript-eslint/parser'
+parserOptions:
+  sourceType: module
+  ecmaVersion: 2021
+  ecmaFeatures:
+    jsx: true
+
+env:
+  es2021: true
+  browser: true
+
+extends:
+  - plugin:@typescript-eslint/recommended
+  - plugin:unicorn/recommended
+  - plugin:prettier/recommended
+
+rules:
+  # :: Node protocol is nice, but it sounds like it is a solid way to also 
+  #    sharply raise Node engine version compatibility.
+  #    Disabling this in the meantime, but may be worthwhile reconsidering.
+  unicorn/prefer-node-protocol: off
+
+  # :: These exceptions are _everywhere_ in React world.
+  #    They're pretty well-known, and keeping to the same terminology makes the 
+  #    codebase a bit more cohesive and grokkable.
+  unicorn/prevent-abbreviations:
+    - error
+    - replacements:
+        env: false
+        props: false
+        params: false
