@@ -7,7 +7,7 @@ type AppRootProps = {
 }
 
 const AppRoot: FC<AppRootProps> = () => {
-  return <></>
+  return <h1>hello world.</h1>
 }
 
 export default AppRoot
