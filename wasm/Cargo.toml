@@ -1,5 +1,5 @@
 [package]
-name = "wasm"
+name = "rules_engine"
 version = "0.1.0"
 authors = ["Richard Neil Ilagan <705310+richardneililagan@users.noreply.github.com>"]
 edition = "2018"
