@@ -17,12 +17,12 @@ const _compileModuleTask = init(wasm)
 const useTabletop = () => {
   // :: Note that this factory function does NOT take into account any previously
   //    created Tabletops. It is the responsibility of the caller to release assets
-  //    once they're completely done.
+  //    once they're completely done. (Generally by calling `.free()` on the instance.)
   const tabletopFactory = useCallback(
     async (width: number, height: number) => {
       await _compileModuleTask
 
-      return Tabletop.new(width, height)
+      return new Tabletop(width, height)
     },
     [_compileModuleTask]
   )
