@@ -2,8 +2,10 @@
 
 #![cfg(target_arch = "wasm32")]
 
+extern crate rules_engine;
 extern crate wasm_bindgen_test;
-use rules_engine::initialize_table;
+
+use rules_engine::models::*;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
