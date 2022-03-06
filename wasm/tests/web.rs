@@ -22,8 +22,8 @@ fn example_a() {
     let tabletop = tabletop::Tabletop::new(5, 5).unwrap();
     let mut robot = robot::Robot::create(&tabletop).unwrap();
 
-    robot.evaluate_command("PLACE 0,0,NORTH");
-    robot.evaluate_command("MOVE");
+    assert!(robot.evaluate_command("PLACE 0,0,NORTH").is_ok());
+    assert!(robot.evaluate_command("MOVE").is_ok());
 
     let status = robot.evaluate_command("REPORT").unwrap();
 
@@ -35,8 +35,8 @@ fn example_b() {
     let tabletop = tabletop::Tabletop::new(5, 5).unwrap();
     let mut robot = robot::Robot::create(&tabletop).unwrap();
 
-    robot.evaluate_command("PLACE 0,0,NORTH");
-    robot.evaluate_command("LEFT");
+    assert!(robot.evaluate_command("PLACE 0,0,NORTH").is_ok());
+    assert!(robot.evaluate_command("LEFT").is_ok());
 
     let status = robot.evaluate_command("REPORT").unwrap();
 
@@ -48,11 +48,11 @@ fn example_c() {
     let tabletop = tabletop::Tabletop::new(5, 5).unwrap();
     let mut robot = robot::Robot::create(&tabletop).unwrap();
 
-    robot.evaluate_command("PLACE 1,2,EAST");
-    robot.evaluate_command("MOVE");
-    robot.evaluate_command("MOVE");
-    robot.evaluate_command("LEFT");
-    robot.evaluate_command("MOVE");
+    assert!(robot.evaluate_command("PLACE 1,2,EAST").is_ok());
+    assert!(robot.evaluate_command("MOVE").is_ok());
+    assert!(robot.evaluate_command("MOVE").is_ok());
+    assert!(robot.evaluate_command("LEFT").is_ok());
+    assert!(robot.evaluate_command("MOVE").is_ok());
 
     let status = robot.evaluate_command("REPORT").unwrap();
 
