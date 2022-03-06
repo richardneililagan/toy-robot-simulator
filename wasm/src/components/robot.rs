@@ -46,7 +46,7 @@ impl Robot {
 
     /// Attempts to translate a provided plaintext command, and executes the respective
     /// operation/s if a known `Instruction` could be discerned.
-    pub fn evaluate_command(&mut self, command: &str) -> Result<(), String> {
+    pub fn evaluate_command(&mut self, command: &str) -> Result<JsValue, String> {
         let instruction_result = Instruction::parse(command);
         if let Err(message) = instruction_result {
             return Err(message);
@@ -79,13 +79,13 @@ impl Robot {
         &mut self,
         position: Position,
         orientation: Orientation,
-    ) -> Result<(), String> {
+    ) -> Result<JsValue, String> {
         match self.tabletop.request_place(&position) {
             Ok(_) => {
                 self.position = Some(position);
                 self.orientation = Some(orientation);
 
-                Ok(())
+                Ok(JsValue::NULL)
             }
 
             Err(message) => Err(format!(
@@ -101,7 +101,7 @@ impl Robot {
     /// this problem is the same as (re-)placing the robot in the arrival position,
     /// except that it should not be possible to do so if the robot has not been
     /// yet placed prior.
-    fn move_forward(&mut self) -> Result<(), String> {
+    fn move_forward(&mut self) -> Result<JsValue, String> {
         if !self.is_placed() {
             return Err("Robot is not placed; discarding instruction".to_string());
         }
@@ -120,7 +120,7 @@ impl Robot {
         match can_move {
             Ok(_) => {
                 self.position = Some(target_position);
-                Ok(())
+                Ok(JsValue::NULL)
             }
 
             Err(message) => Err(format!("Robot cannot be moved: {}", message)),
@@ -128,7 +128,7 @@ impl Robot {
     }
 
     /// Re-orients the Robot by turning it to the left.
-    fn turn_left(&mut self) -> Result<(), String> {
+    fn turn_left(&mut self) -> Result<JsValue, String> {
         if !self.is_placed() {
             return Err("Robot is not placed; discarding instruction.".to_string());
         }
@@ -144,11 +144,11 @@ impl Robot {
 
         self.orientation = Some(new_orientation);
 
-        Ok(())
+        Ok(JsValue::NULL)
     }
 
     /// Re-orients the Robot by turning it to the right.
-    fn turn_right(&mut self) -> Result<(), String> {
+    fn turn_right(&mut self) -> Result<JsValue, String> {
         if !self.is_placed() {
             return Err("Robot is not placed; discarding instruction.".to_string());
         }
@@ -164,7 +164,7 @@ impl Robot {
 
         self.orientation = Some(new_orientation);
 
-        Ok(())
+        Ok(JsValue::NULL)
     }
 
     /// Has this Robot successfully been placed on a Tabletop?
