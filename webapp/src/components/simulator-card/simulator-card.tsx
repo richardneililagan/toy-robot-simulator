@@ -68,7 +68,8 @@ const SimulatorCard: FC<SimulatorCardProps> = () => {
 
       <footer className='flex flex-row justify-between gap-2'>
         <button
-          className='px-4 py-2 border-none rounded bg-cyan-500 text-white w-1/2'
+          className='px-4 py-2 border-none rounded bg-cyan-500 text-white w-1/2 disabled:bg-cyan-200'
+          disabled={!commands?.trim()}
           onClick={evaluateCommands}
         >
           Evaluate
