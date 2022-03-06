@@ -19,7 +19,7 @@ impl Orientation {
     }
 }
 
-struct Position {
+pub struct Position {
     x: i32,
     y: i32,
 }
