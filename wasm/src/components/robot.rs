@@ -44,6 +44,8 @@ impl Robot {
         })
     }
 
+    /// Attempts to translate a provided plaintext command, and executes the respective
+    /// operation/s if a known `Instruction` could be discerned.
     pub fn evaluate_command(&mut self, command: &str) -> Result<(), String> {
         let instruction_result = Instruction::parse(command);
         if let Err(message) = instruction_result {
@@ -57,6 +59,7 @@ impl Robot {
                 self.place_on_tabletop(position, orientation)
             }
 
+            Instruction::Move => self.move_forward(),
             Instruction::Left => self.turn_left(),
             Instruction::Right => self.turn_right(),
 
@@ -92,6 +95,39 @@ impl Robot {
         }
     }
 
+    /// Moves the robot forward 1 unit, in the direction it is currently oriented in.
+    ///
+    /// This function takes advantage of the fact that a movement in the context of
+    /// this problem is the same as (re-)placing the robot in the arrival position,
+    /// except that it should not be possible to do so if the robot has not been
+    /// yet placed prior.
+    fn move_forward(&mut self) -> Result<(), String> {
+        if !self.is_placed() {
+            return Err("Robot is not placed; discarding instruction".to_string());
+        }
+
+        // :: ---
+
+        let mut target_position = self.position.unwrap();
+        match self.orientation.as_ref().unwrap() {
+            Orientation::North => target_position.y += 1,
+            Orientation::South => target_position.y -= 1,
+            Orientation::East => target_position.x += 1,
+            Orientation::West => target_position.x -= 1,
+        }
+
+        let can_move = self.tabletop.request_place(&target_position);
+        match can_move {
+            Ok(_) => {
+                self.position = Some(target_position);
+                Ok(())
+            }
+
+            Err(message) => Err(format!("Robot cannot be moved: {}", message)),
+        }
+    }
+
+    /// Re-orients the Robot by turning it to the left.
     fn turn_left(&mut self) -> Result<(), String> {
         if !self.is_placed() {
             return Err("Robot is not placed; discarding instruction.".to_string());
@@ -111,6 +147,7 @@ impl Robot {
         Ok(())
     }
 
+    /// Re-orients the Robot by turning it to the right.
     fn turn_right(&mut self) -> Result<(), String> {
         if !self.is_placed() {
             return Err("Robot is not placed; discarding instruction.".to_string());
@@ -133,7 +170,7 @@ impl Robot {
     /// Has this Robot successfully been placed on a Tabletop?
     ///
     /// Perhaps a bit naively, Robot considers itself placed if it has been
-    /// given a non-None value for their corresponding fields. It is expected
+    /// given a non-None value for position and orientation. It is expected
     /// that these fields are None on instantiation.
     fn is_placed(&self) -> bool {
         self.position.is_some() && self.orientation.is_some()
@@ -297,5 +334,55 @@ mod tests {
         assert!(!robot.is_placed());
         assert!(robot.turn_left().is_err());
         assert!(robot.turn_right().is_err());
+    }
+
+    #[test]
+    fn robot_cannot_be_moved_if_it_has_not_been_placed_yet() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+        let mut robot = Robot::create(&tabletop).unwrap();
+
+        assert!(!robot.is_placed());
+        assert!(robot.move_forward().is_err());
+    }
+
+    #[test]
+    fn robot_can_be_moved_forward_in_the_right_direction() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+        let mut robot = Robot::create(&tabletop).unwrap();
+
+        assert!(robot
+            .place_on_tabletop(Position { x: 3, y: 3 }, Orientation::North)
+            .is_ok());
+
+        assert!(robot.move_forward().is_ok());
+        assert_eq!(robot.position.unwrap(), Position { x: 3, y: 4 });
+
+        assert!(robot.move_forward().is_err()); // :: Reached the edge of the tabletop.
+        assert_eq!(robot.position.unwrap(), Position { x: 3, y: 4 });
+
+        assert!(robot.turn_right().is_ok());
+        assert!(robot.move_forward().is_ok());
+        assert_eq!(robot.position.unwrap(), Position { x: 4, y: 4 });
+
+        assert!(robot.move_forward().is_err()); // :: Reached the edge of the tabletop.
+        assert_eq!(robot.position.unwrap(), Position { x: 4, y: 4 });
+
+        assert!(robot.turn_right().is_ok());
+        for y in (0..=3).rev() {
+            assert!(robot.move_forward().is_ok());
+            assert_eq!(robot.position.unwrap(), Position { x: 4, y });
+        }
+
+        assert!(robot.move_forward().is_err()); // :: Reached the edge of the tabletop.
+        assert_eq!(robot.position.unwrap(), Position { x: 4, y: 0 });
+
+        assert!(robot.turn_right().is_ok());
+        for x in (0..=3).rev() {
+            assert!(robot.move_forward().is_ok());
+            assert_eq!(robot.position.unwrap(), Position { x, y: 0 });
+        }
+
+        assert!(robot.move_forward().is_err()); // :: Reached the edge of the tabletop.
+        assert_eq!(robot.position.unwrap(), Position { x: 0, y: 0 });
     }
 }

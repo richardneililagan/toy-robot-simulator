@@ -3,6 +3,7 @@ use wasm_bindgen::prelude::*;
 // :: ---
 
 #[derive(Debug, PartialEq)]
+#[wasm_bindgen]
 pub enum Orientation {
     North,
     East,
@@ -10,8 +11,9 @@ pub enum Orientation {
     South,
 }
 
+#[wasm_bindgen]
 impl Orientation {
-    pub fn parse(plaintext: &str) -> Result<Self, String> {
+    pub fn parse(plaintext: &str) -> Result<Orientation, String> {
         match plaintext.to_uppercase().as_str() {
             "NORTH" => Ok(Orientation::North),
             "EAST" => Ok(Orientation::East),
@@ -23,7 +25,7 @@ impl Orientation {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[wasm_bindgen]
 pub struct Position {
     pub x: i32,
