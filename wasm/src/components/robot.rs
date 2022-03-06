@@ -62,8 +62,7 @@ impl Robot {
             Instruction::Move => self.move_forward(),
             Instruction::Left => self.turn_left(),
             Instruction::Right => self.turn_right(),
-
-            _ => unreachable!(),
+            Instruction::Report => self.report_status(),
         }
     }
 
@@ -167,6 +166,33 @@ impl Robot {
         Ok(JsValue::NULL)
     }
 
+    fn report_status(&self) -> Result<JsValue, String> {
+        if !self.is_placed() {
+            return Err("Robot is not placed; discarding instruction.".to_string());
+        }
+
+        // :: ---
+
+        let current_position = self.position.unwrap();
+
+        // :: Unfortunately, `wasm_bindgen` does not yet support enums that have values
+        //    associated to each variant aside from integers. We have to perform
+        //    conversion ourselves in this manner.
+        let plaintext_orientation = match self.orientation.unwrap() {
+            Orientation::North => "NORTH",
+            Orientation::East => "EAST",
+            Orientation::South => "SOUTH",
+            Orientation::West => "WEST",
+        };
+
+        let report_message = format!(
+            "{},{},{}",
+            current_position.x, current_position.y, plaintext_orientation
+        );
+
+        Ok(JsValue::from_str(&report_message))
+    }
+
     /// Has this Robot successfully been placed on a Tabletop?
     ///
     /// Perhaps a bit naively, Robot considers itself placed if it has been
@@ -181,6 +207,8 @@ impl Robot {
 
 #[cfg(test)]
 mod tests {
+    use crate::components::tabletop;
+
     use super::*;
 
     #[test]
@@ -385,4 +413,33 @@ mod tests {
         assert!(robot.move_forward().is_err()); // :: Reached the edge of the tabletop.
         assert_eq!(robot.position.unwrap(), Position { x: 0, y: 0 });
     }
+
+    #[test]
+    fn robot_cannot_report_if_it_has_not_been_placed() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+        let robot = Robot::create(&tabletop).unwrap();
+
+        assert!(!robot.is_placed());
+        assert!(robot.report_status().is_err());
+    }
+
+    // :: We can't reliably test `JsValue` itself because this type
+    //    doesn't really reside in the Rust runtime itself (and instead is
+    //    part of the generated JavaScript glue code during WASM compilation.)
+    //
+    //    Not ideal, but we trust that the proper `REPORT` behavior is tested
+    //    in the WASM module test suites (in `tests/web.rs`).
+    //
+    //    @see https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+    //
+    // #[test]
+    // fn robot_reports_status_correctly() {
+    //     let tabletop = Tabletop::new(5, 5).unwrap();
+    //     let mut robot = Robot::create(&tabletop).unwrap();
+
+    //     assert!(robot
+    //         .place_on_tabletop(Position { x: 3, y: 3 }, Orientation::North)
+    //         .is_ok());
+    //     assert_eq!(robot.report_status().unwrap(), "3,3,NORTH");
+    // }
 }

@@ -1,9 +1,10 @@
+// #![allow(clippy::unused_unit)]
+
 use wasm_bindgen::prelude::*;
 
 // :: ---
 
-#[derive(Debug, PartialEq)]
-#[wasm_bindgen]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Orientation {
     North,
     East,
@@ -11,7 +12,6 @@ pub enum Orientation {
     South,
 }
 
-#[wasm_bindgen]
 impl Orientation {
     pub fn parse(plaintext: &str) -> Result<Orientation, String> {
         match plaintext.to_uppercase().as_str() {
