@@ -5,7 +5,7 @@ use super::common::*;
 // :: ---
 
 #[derive(Debug, PartialEq)]
-enum Instruction {
+pub enum Instruction {
     Place {
         x: i32,
         y: i32,

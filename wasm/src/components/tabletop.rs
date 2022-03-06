@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use super::common::*;
+
 // :: ---
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -20,12 +22,9 @@ impl Tabletop {
         }
     }
 
-    pub fn get_width(&self) -> i32 {
-        self.width
-    }
-
-    pub fn get_height(&self) -> i32 {
-        self.height
+    /// Checks if an item can be placed on the Tabletop at the position provided.
+    pub fn request_place(&self, position: &Position) -> bool {
+        position.x >= 0 && position.y >= 0 && position.x < self.width && position.y < self.height
     }
 }
 
@@ -57,5 +56,27 @@ mod tests {
         assert!(Tabletop::new(0, 0).is_err());
         assert!(Tabletop::new(0, -10).is_err());
         assert!(Tabletop::new(-10, 0).is_err());
+    }
+
+    #[test]
+    fn tabletop_can_only_place_within_its_dimensions() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+
+        // :: should succeed
+        assert!(tabletop.request_place(&Position { x: 3, y: 3 }));
+        assert!(tabletop.request_place(&Position { x: 0, y: 3 }));
+        assert!(tabletop.request_place(&Position { x: 3, y: 0 }));
+        assert!(tabletop.request_place(&Position { x: 0, y: 0 }));
+
+        // :: should fail
+        assert!(!tabletop.request_place(&Position { x: -1, y: 3 }));
+        assert!(!tabletop.request_place(&Position { x: 1, y: -3 }));
+        assert!(!tabletop.request_place(&Position { x: -1, y: -3 }));
+        assert!(!tabletop.request_place(&Position { x: 5, y: 3 }));
+        assert!(!tabletop.request_place(&Position { x: 1, y: 5 }));
+        assert!(!tabletop.request_place(&Position { x: 5, y: 5 }));
+        assert!(!tabletop.request_place(&Position { x: 50, y: 5 }));
+        assert!(!tabletop.request_place(&Position { x: 5, y: 50 }));
+        assert!(!tabletop.request_place(&Position { x: 50, y: 50 }));
     }
 }

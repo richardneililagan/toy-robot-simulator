@@ -1,3 +1,7 @@
+use wasm_bindgen::prelude::*;
+
+// :: ---
+
 #[derive(Debug, PartialEq)]
 pub enum Orientation {
     North,
@@ -19,7 +23,9 @@ impl Orientation {
     }
 }
 
+#[derive(Debug, PartialEq)]
+#[wasm_bindgen]
 pub struct Position {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
 }
