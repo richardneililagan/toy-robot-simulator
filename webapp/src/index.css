@@ -20,5 +20,6 @@
 @layer components {
   #approot {
     @apply min-h-screen;
+    @apply flex items-center justify-center;
   }
 }

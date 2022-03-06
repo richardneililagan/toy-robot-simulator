@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 //    dynamically during the build process. Types + intellisense for these items are
 //    made available as a side-effect of running `make link`.
 import init, { Tabletop } from '@toy-robot-simulator/rules_engine'
-// :: ?url is required so that the bundler doesn't attempt to mangle the WASM contents.
+// :: ?url is required so that ohe bundler doesn't attempt to mangle the WASM contents.
 import wasm from '@toy-robot-simulator/rules_engine/rules_engine_bg.wasm?url'
 
 // :: ---

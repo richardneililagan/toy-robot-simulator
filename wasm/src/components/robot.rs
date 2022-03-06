@@ -1,3 +1,5 @@
+#![allow(clippy::unused_unit)]
+
 use wasm_bindgen::prelude::*;
 
 use super::common::*;
@@ -30,12 +32,14 @@ pub struct Robot {
     orientation: Option<Orientation>,
 }
 
+#[wasm_bindgen]
 impl Robot {
     /// Creates a Robot and registers it (not place!) on a Tabletop.
     ///
     /// Registering a Robot to a Tabletop means that we intend to use this
     /// instance of Robot with this Tabletop. It will still need to be placed
     /// on the Tabletop before it can be given most instructions.
+    #[wasm_bindgen]
     pub fn create(tabletop: &Tabletop) -> Result<Robot, String> {
         Ok(Robot {
             tabletop: *tabletop,
@@ -46,6 +50,7 @@ impl Robot {
 
     /// Attempts to translate a provided plaintext command, and executes the respective
     /// operation/s if a known `Instruction` could be discerned.
+    #[wasm_bindgen]
     pub fn evaluate_command(&mut self, command: &str) -> Result<JsValue, String> {
         let instruction_result = Instruction::parse(command);
         if let Err(message) = instruction_result {

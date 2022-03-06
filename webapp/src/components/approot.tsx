@@ -1,5 +1,7 @@
 import { FC } from 'react'
 
+import SimulatorCard from '@/components/simulator-card'
+
 // :: ---
 
 type AppRootProps = {
@@ -7,7 +9,7 @@ type AppRootProps = {
 }
 
 const AppRoot: FC<AppRootProps> = () => {
-  return <h1>hello world.</h1>
+  return <SimulatorCard />
 }
 
 export default AppRoot
