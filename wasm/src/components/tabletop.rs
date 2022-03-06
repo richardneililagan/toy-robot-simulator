@@ -23,8 +23,16 @@ impl Tabletop {
     }
 
     /// Checks if an item can be placed on the Tabletop at the position provided.
-    pub fn request_place(&self, position: &Position) -> bool {
-        position.x >= 0 && position.y >= 0 && position.x < self.width && position.y < self.height
+    pub fn request_place(&self, position: &Position) -> Result<(), String> {
+        if position.x >= 0 && position.y >= 0 && position.x < self.width && position.y < self.height
+        {
+            Ok(())
+        } else {
+            Err(format!(
+                "Position ({}, {}) is out of bounds.",
+                position.x, position.y
+            ))
+        }
     }
 }
 
@@ -63,20 +71,20 @@ mod tests {
         let tabletop = Tabletop::new(5, 5).unwrap();
 
         // :: should succeed
-        assert!(tabletop.request_place(&Position { x: 3, y: 3 }));
-        assert!(tabletop.request_place(&Position { x: 0, y: 3 }));
-        assert!(tabletop.request_place(&Position { x: 3, y: 0 }));
-        assert!(tabletop.request_place(&Position { x: 0, y: 0 }));
+        assert!(tabletop.request_place(&Position { x: 3, y: 3 }).is_ok());
+        assert!(tabletop.request_place(&Position { x: 0, y: 3 }).is_ok());
+        assert!(tabletop.request_place(&Position { x: 3, y: 0 }).is_ok());
+        assert!(tabletop.request_place(&Position { x: 0, y: 0 }).is_ok());
 
         // :: should fail
-        assert!(!tabletop.request_place(&Position { x: -1, y: 3 }));
-        assert!(!tabletop.request_place(&Position { x: 1, y: -3 }));
-        assert!(!tabletop.request_place(&Position { x: -1, y: -3 }));
-        assert!(!tabletop.request_place(&Position { x: 5, y: 3 }));
-        assert!(!tabletop.request_place(&Position { x: 1, y: 5 }));
-        assert!(!tabletop.request_place(&Position { x: 5, y: 5 }));
-        assert!(!tabletop.request_place(&Position { x: 50, y: 5 }));
-        assert!(!tabletop.request_place(&Position { x: 5, y: 50 }));
-        assert!(!tabletop.request_place(&Position { x: 50, y: 50 }));
+        assert!(tabletop.request_place(&Position { x: -1, y: 3 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 1, y: -3 }).is_err());
+        assert!(tabletop.request_place(&Position { x: -1, y: -3 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 5, y: 3 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 1, y: 5 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 5, y: 5 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 50, y: 5 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 5, y: 50 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 50, y: 50 }).is_err());
     }
 }

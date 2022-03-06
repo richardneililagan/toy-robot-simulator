@@ -6,6 +6,7 @@ use super::tabletop::Tabletop;
 
 // :: ---
 
+/// A Robot is a representation of a robot that can be placed on top of a Tabletop.
 #[wasm_bindgen]
 pub struct Robot {
     //  We can't use a direct reference here yet (`Option<&Tabletop>`)
@@ -56,24 +57,75 @@ impl Robot {
                 self.place_on_tabletop(position, orientation)
             }
 
+            Instruction::Left => self.turn_left(),
+            Instruction::Right => self.turn_right(),
+
             _ => unreachable!(),
         }
     }
 
+    /// Places a Robot instance on top of a Tabletop at the provided position,
+    /// facing the provided orientation.
+    ///
+    /// # Returns
+    ///
+    /// This returns `Result::Ok(())` if the operation was valid and enacted,
+    /// and `Result::Err(message)` otherwise, with `message` containing why the
+    /// operation failed.
     fn place_on_tabletop(
         &mut self,
         position: Position,
         orientation: Orientation,
     ) -> Result<(), String> {
-        let can_place = self.tabletop.request_place(&position);
-        if !can_place {
-            return Err("Robot cannot be placed at that position.".to_string());
+        match self.tabletop.request_place(&position) {
+            Ok(_) => {
+                self.position = Some(position);
+                self.orientation = Some(orientation);
+
+                Ok(())
+            }
+
+            Err(message) => Err(format!(
+                "Robot cannot be placed at that position: {}",
+                message
+            )),
+        }
+    }
+
+    fn turn_left(&mut self) -> Result<(), String> {
+        if !self.is_placed() {
+            return Err("Robot is not placed; discarding instruction.".to_string());
         }
 
         // :: ---
 
-        self.position = Some(position);
-        self.orientation = Some(orientation);
+        let new_orientation = match self.orientation.as_ref().unwrap() {
+            Orientation::North => Orientation::West,
+            Orientation::West => Orientation::South,
+            Orientation::South => Orientation::East,
+            Orientation::East => Orientation::North,
+        };
+
+        self.orientation = Some(new_orientation);
+
+        Ok(())
+    }
+
+    fn turn_right(&mut self) -> Result<(), String> {
+        if !self.is_placed() {
+            return Err("Robot is not placed; discarding instruction.".to_string());
+        }
+
+        // :: ---
+
+        let new_orientation = match self.orientation.as_ref().unwrap() {
+            Orientation::North => Orientation::East,
+            Orientation::East => Orientation::South,
+            Orientation::South => Orientation::West,
+            Orientation::West => Orientation::North,
+        };
+
+        self.orientation = Some(new_orientation);
 
         Ok(())
     }
@@ -142,7 +194,7 @@ mod tests {
     }
 
     #[test]
-    fn robot_is_successfully_oriented_on_tabletop_when_placed() {
+    fn robot_is_correctly_oriented_on_tabletop_when_placed() {
         let tabletop = Tabletop::new(5, 5).unwrap();
         let mut robot = Robot::create(&tabletop).unwrap();
 
@@ -177,11 +229,73 @@ mod tests {
             .is_ok());
         assert!(robot.is_placed());
 
+        assert_eq!(robot.position.as_ref().unwrap(), &Position { x: 3, y: 3 });
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::North);
+
         assert!(robot
             .place_on_tabletop(Position { x: 0, y: 2 }, Orientation::South)
             .is_ok());
         assert!(robot.is_placed());
+
         assert_eq!(robot.position.as_ref().unwrap(), &Position { x: 0, y: 2 });
         assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::South);
+    }
+
+    #[test]
+    fn robot_turns_left_correctly() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+        let mut robot = Robot::create(&tabletop).unwrap();
+
+        assert!(robot
+            .place_on_tabletop(Position { x: 3, y: 3 }, Orientation::North)
+            .is_ok());
+
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::North);
+
+        assert!(robot.turn_left().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::West);
+
+        assert!(robot.turn_left().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::South);
+
+        assert!(robot.turn_left().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::East);
+
+        assert!(robot.turn_left().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::North);
+    }
+
+    #[test]
+    fn robot_turns_right_correctly() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+        let mut robot = Robot::create(&tabletop).unwrap();
+
+        assert!(robot
+            .place_on_tabletop(Position { x: 3, y: 3 }, Orientation::North)
+            .is_ok());
+
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::North);
+
+        assert!(robot.turn_right().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::East);
+
+        assert!(robot.turn_right().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::South);
+
+        assert!(robot.turn_right().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::West);
+
+        assert!(robot.turn_right().is_ok());
+        assert_eq!(robot.orientation.as_ref().unwrap(), &Orientation::North);
+    }
+
+    #[test]
+    fn robot_cannot_turn_if_not_yet_placed() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+        let mut robot = Robot::create(&tabletop).unwrap();
+
+        assert!(!robot.is_placed());
+        assert!(robot.turn_left().is_err());
+        assert!(robot.turn_right().is_err());
     }
 }
