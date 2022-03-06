@@ -1,4 +1,4 @@
-// #![allow(clippy::unused_unit)]
+#![allow(clippy::unused_unit)]
 
 use wasm_bindgen::prelude::*;
 
