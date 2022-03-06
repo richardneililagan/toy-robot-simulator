@@ -22,6 +22,7 @@
     "@types/node": "^17.0.21",
     "@types/react": "^17.0.33",
     "@types/react-dom": "^17.0.10",
+    "@types/whatwg-fetch": "^0.0.33",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
     "@vitejs/plugin-react": "^1.0.7",
@@ -38,6 +39,7 @@
     "typescript": "4.5.x",
     "vite": "^2.8.0",
     "vite-tsconfig-paths": "^3.4.1",
-    "vitest": "^0.5.8"
+    "vitest": "^0.5.8",
+    "whatwg-fetch": "^3.6.2"
   }
 }
