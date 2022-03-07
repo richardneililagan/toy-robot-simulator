@@ -24,13 +24,27 @@ build-ci-image:
 
 # :: ---
 
-test: test-wasm test-webapp
+tests: test-wasm test-webapp
+test-wasm: lint-wasm test-wasm-unit test-wasm-target
+test-webapp: lint-webapp test-webapp-unit test-
 
-test-wasm:
+lint-wasm:
+	@cargo clippy --manifest-path wasm/Cargo.toml
+
+test-wasm-unit:
 	@cargo test --manifest-path wasm/Cargo.toml --locked
 
-test-webapp:
+test-wasm-target:
+	@wasm-pack test --firefox --headless wasm
+	
+lint-webapp:
+	@yarn --cwd webapp lint
+
+test-webapp-unit: serve
 	@yarn --cwd webapp test run
+
+test-webapp-functional: serve
+	@yarn --cwd webapp cypress open
 
 # :: ---
 

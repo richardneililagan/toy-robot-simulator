@@ -15,8 +15,11 @@ const AppRoot: FC<AppRootProps> = () => {
 
   return (
     <section className='flex flex-col gap-8 items-center'>
-      <header>
+      <header className='text-center flex flex-col gap-4'>
         <h1 className='text-4xl text-white font-extralight'>Toy Robot Simulator</h1>
+        <p className='text-xl text-white font-thin'>
+          This webapp simulates interactions with a Robot that can be placed on a 5x5 Tabletop.
+        </p>
       </header>
 
       {wasmSupported ? (
