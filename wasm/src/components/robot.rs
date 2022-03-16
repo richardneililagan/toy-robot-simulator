@@ -42,7 +42,8 @@ impl Robot {
     #[wasm_bindgen]
     pub fn create(tabletop: &Tabletop) -> Result<Robot, String> {
         Ok(Robot {
-            tabletop: *tabletop,
+            // tabletop: *tabletop,
+            tabletop: tabletop.clone(),
             position: None,
             orientation: None,
         })

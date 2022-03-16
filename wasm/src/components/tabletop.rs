@@ -1,16 +1,19 @@
 #![allow(clippy::unused_unit)]
 
+use std::collections::*;
 use wasm_bindgen::prelude::*;
 
 use super::common::*;
 
 // :: ---
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 #[wasm_bindgen]
 pub struct Tabletop {
     width: i32,
     height: i32,
+
+    obstacles: Vec<Position>,
 }
 
 #[wasm_bindgen]
@@ -18,22 +21,49 @@ impl Tabletop {
     #[wasm_bindgen(constructor)]
     pub fn new(width: i32, height: i32) -> Result<Tabletop, String> {
         match (width, height) {
-            (width, height) if width > 0 && height > 0 => Ok(Tabletop { width, height }),
+            (width, height) if width > 0 && height > 0 => Ok(Tabletop {
+                width,
+                height,
+                obstacles: vec![],
+            }),
 
             _ => Err("Tabletop dimensions need to be positive integers.".to_string()),
         }
     }
 
+    #[wasm_bindgen]
+    pub fn add_obstacle(&mut self, x: i32, y: i32) -> Result<(), String> {
+        match (x, y) {
+            (x, y) if x >= 0 && y >= 0 && x < self.width && y < self.height => {
+                self.obstacles.push(Position { x, y });
+                Ok(())
+            }
+
+            _ => Err(format!("Position ({}, {}) is out of bounds.", x, y)),
+        }
+    }
+
     /// Checks if an item can be placed on the Tabletop at the position provided.
     pub fn request_place(&self, position: &Position) -> Result<(), String> {
-        if position.x >= 0 && position.y >= 0 && position.x < self.width && position.y < self.height
+        // :: Check if the requested position is outside of the bounds of the table.
+        if !(position.x >= 0
+            && position.y >= 0
+            && position.x < self.width
+            && position.y < self.height)
         {
-            Ok(())
-        } else {
             Err(format!(
                 "Position ({}, {}) is out of bounds.",
                 position.x, position.y
             ))
+        }
+        // :: Check if the requested position is on top of a known obstacle.
+        else if self.obstacles.contains(position) {
+            Err(format!(
+                "Position ({}, {}) is blocked.",
+                position.x, position.y,
+            ))
+        } else {
+            Ok(())
         }
     }
 }
@@ -88,5 +118,27 @@ mod tests {
         assert!(tabletop.request_place(&Position { x: 50, y: 5 }).is_err());
         assert!(tabletop.request_place(&Position { x: 5, y: 50 }).is_err());
         assert!(tabletop.request_place(&Position { x: 50, y: 50 }).is_err());
+    }
+
+    #[test]
+    fn tabletop_can_add_obstacles_correctly() {
+        let mut tabletop = Tabletop::new(5, 5).unwrap();
+
+        // :: should be ok
+        assert!(tabletop.add_obstacle(1, 1).is_ok());
+        assert!(tabletop.add_obstacle(4, 4).is_ok());
+
+        assert_eq!(tabletop.obstacles.len(), 2);
+
+        // :: should fail
+        assert!(tabletop.add_obstacle(-1, 3).is_err());
+        assert!(tabletop.add_obstacle(1, -1).is_err());
+        assert!(tabletop.add_obstacle(-1, -3).is_err());
+
+        assert!(tabletop.add_obstacle(6, 1).is_err());
+        assert!(tabletop.add_obstacle(1, 6).is_err());
+        assert!(tabletop.add_obstacle(6, 6).is_err());
+
+        assert_eq!(tabletop.obstacles.len(), 2);
     }
 }
