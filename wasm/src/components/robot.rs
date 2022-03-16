@@ -65,6 +65,9 @@ impl Robot {
                 self.place_on_tabletop(position, orientation)
             }
 
+            // :: TODO
+            Instruction::Obstacle { x, y } => self.add_obstacle_to_tabletop(Position { x, y }),
+
             Instruction::Move => self.move_forward(),
             Instruction::Left => self.turn_left(),
             Instruction::Right => self.turn_right(),
@@ -95,6 +98,26 @@ impl Robot {
 
             Err(message) => Err(format!(
                 "Robot cannot be placed at that position: {}",
+                message
+            )),
+        }
+    }
+
+    /// Registers an obstacle on the tabletop.
+    ///
+    /// This will not allow placing an obstacle on the current robot position,
+    /// if the robot is currently placed on the tabletop.
+    fn add_obstacle_to_tabletop(&mut self, position: Position) -> Result<JsValue, String> {
+        if self.is_placed() && self.position.unwrap() == position {
+            return Err("Cannot place an obstacle right on top of the robot.".to_string());
+        }
+
+        match self.tabletop.add_obstacle(position.x, position.y) {
+            Ok(()) => Ok(JsValue::from_str(
+                format!("Obstacle placed at {}, {}.", position.x, position.y).as_str(),
+            )),
+            Err(message) => Err(format!(
+                "Could not place obstacle at that position: {}",
                 message
             )),
         }
@@ -427,6 +450,27 @@ mod tests {
 
         assert!(!robot.is_placed());
         assert!(robot.report_status().is_err());
+    }
+
+    fn robot_cannot_place_obstacle_on_top_of_it() {
+        let tabletop = Tabletop::new(5, 5).unwrap();
+        let mut robot = Robot::create(&tabletop).unwrap();
+
+        assert!(robot
+            .place_on_tabletop(Position { x: 3, y: 3 }, Orientation::North)
+            .is_ok());
+
+        assert!(robot
+            .add_obstacle_to_tabletop(Position { x: 3, y: 3 })
+            .is_err());
+
+        assert!(robot
+            .add_obstacle_to_tabletop(Position { x: 1, y: 1 })
+            .is_ok());
+
+        assert!(robot
+            .add_obstacle_to_tabletop(Position { x: 4, y: 4 })
+            .is_ok());
     }
 
     // :: We can't reliably test `JsValue` itself because this type

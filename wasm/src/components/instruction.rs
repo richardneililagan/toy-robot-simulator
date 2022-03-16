@@ -1,3 +1,5 @@
+use std::iter::Inspect;
+
 use super::common::*;
 
 // :: ---
@@ -8,6 +10,11 @@ pub enum Instruction {
         x: i32,
         y: i32,
         orientation: Orientation,
+    },
+
+    Obstacle {
+        x: i32,
+        y: i32,
     },
 
     Left,
@@ -50,6 +57,31 @@ impl Instruction {
                 // :: If x, y, and orientation all parsed correctly
                 if let (Ok(x), Ok(y), Ok(orientation)) = (rx, ry, rorientation) {
                     Ok(Instruction::Place { x, y, orientation })
+                } else {
+                    Err(format!("Arguments for command {} were invalid.", words[0]))
+                }
+            }
+
+            "OBSTACLE" if words.len() >= 2 => {
+                let args_fragment = words[1..].join("");
+                let args = args_fragment
+                    .split(',')
+                    .map(|fragment| fragment.trim())
+                    .collect::<Vec<&str>>();
+
+                if args.len() < 2 {
+                    return Err(format!(
+                        "Arguments for command {} were incomplete.",
+                        words[0]
+                    ));
+                }
+
+                let rx = args[0].parse::<i32>();
+                let ry = args[1].parse::<i32>();
+
+                // :: If x and y are parsed correctly
+                if let (Ok(x), Ok(y)) = (rx, ry) {
+                    Ok(Instruction::Obstacle { x, y })
                 } else {
                     Err(format!("Arguments for command {} were invalid.", words[0]))
                 }
@@ -152,6 +184,28 @@ mod tests {
     fn place_instruction_requires_comma_delimiter() {
         assert!(Instruction::parse("PLACE 2 10 WEST").is_err());
         assert!(Instruction::parse("PLACE 2,10,WEST").is_ok());
+    }
+
+    #[test]
+    fn obstacle_instruction_is_parsed_correctly() {
+        expect_conversion("OBSTACLE 2,2", Instruction::Obstacle { x: 2, y: 2 });
+        expect_conversion("obstacle 1,3", Instruction::Obstacle { x: 1, y: 3 });
+    }
+
+    #[test]
+    fn obstacle_instruction_requires_at_least_two_args() {
+        assert!(Instruction::parse("OBSTACLE").is_err());
+        assert!(Instruction::parse("OBSTACLE 2").is_err());
+
+        assert!(Instruction::parse("OBSTACLE 1,3").is_ok());
+        assert!(Instruction::parse("OBSTACLE 1,3,3").is_ok());
+        assert!(Instruction::parse("OBSTACLE 1,3,2,4").is_ok());
+    }
+
+    #[test]
+    fn obstacle_instruction_requires_comma_delimiter() {
+        assert!(Instruction::parse("OBSTACLE 2 3").is_err());
+        assert!(Instruction::parse("OBSTACLE 2,3").is_ok());
     }
 
     #[test]

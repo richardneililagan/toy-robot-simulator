@@ -30,7 +30,6 @@ impl Tabletop {
         }
     }
 
-    #[wasm_bindgen]
     pub fn add_obstacle(&mut self, x: i32, y: i32) -> Result<(), String> {
         match (x, y) {
             (x, y) if x >= 0 && y >= 0 && x < self.width && y < self.height => {
