@@ -1,6 +1,5 @@
 #![allow(clippy::unused_unit)]
 
-use std::collections::*;
 use wasm_bindgen::prelude::*;
 
 use super::common::*;
@@ -140,5 +139,21 @@ mod tests {
         assert!(tabletop.add_obstacle(6, 6).is_err());
 
         assert_eq!(tabletop.obstacles.len(), 2);
+    }
+
+    #[test]
+    fn tabletop_does_not_allow_movement_to_obstacles() {
+        let mut tabletop = Tabletop::new(5, 5).unwrap();
+
+        assert!(tabletop.add_obstacle(1, 1).is_ok());
+        assert!(tabletop.add_obstacle(4, 4).is_ok());
+
+        // :: should be ok
+        assert!(tabletop.request_place(&Position { x: 0, y: 0 }).is_ok());
+        assert!(tabletop.request_place(&Position { x: 3, y: 3 }).is_ok());
+
+        // :: should fail
+        assert!(tabletop.request_place(&Position { x: 1, y: 1 }).is_err());
+        assert!(tabletop.request_place(&Position { x: 4, y: 4 }).is_err());
     }
 }
